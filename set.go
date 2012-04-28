@@ -159,7 +159,7 @@ type dotToken struct {
 
 func nextDot(name string) (t *dotToken, err error) {
 	t = &dotToken{}
-	t.Field = strings.Trim(name, ".")
+	t.Field = strings.Trim(name, ".[")
 
 	if i := strings.IndexAny(t.Field, ".["); i > 0 {
 		t.Field, t.Left = t.Field[:i], t.Field[i+1:]

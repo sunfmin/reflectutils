@@ -56,3 +56,16 @@ func TestSetMapAndSlice(t *testing.T) {
 	}
 
 }
+
+func TestSlices(t *testing.T) {
+	var val []string
+	Set(&val, "[100]", "100")
+	if val[0] != "" {
+		t.Error("val[0] is not empty")
+	}
+
+	if val[100] != "100" {
+		t.Error("val[0] is not 100")
+	}
+
+}
