@@ -65,7 +65,7 @@ func TestSlices(t *testing.T) {
 	}
 
 	if val[100] != "100" {
-		t.Error("val[0] is not 100")
+		t.Error("val[100] is not 100")
 	}
 
 }

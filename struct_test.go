@@ -13,7 +13,12 @@ type Person struct {
 	Departments []*Department
 	Projects    []*Project
 	Phones      map[string]string
-	PhoneCalls  map[*Person]int
+	Languages   map[string]Language
+}
+
+type Language struct {
+	Code string
+	Name string
 }
 
 type Company struct {
@@ -127,6 +132,13 @@ var cases = []*setTest{
 			return p.Projects[0].Members[2].Name
 		},
 	},
+	{
+		Name:  ".Languages.EN.Name",
+		Value: "English",
+		Getter: func(p *Person) string {
+			return p.Languages["EN"].Name
+		},
+	},
 }
 
 func TestSetTheNil(t *testing.T) {
@@ -149,7 +161,7 @@ func TestSetNotNil(t *testing.T) {
 	v := &Person{
 		Name: "F",
 		Projects: []*Project{
-			{Id: "3"},
+			{Id: "3", Name: "Sendgrid"},
 		},
 	}
 
@@ -158,6 +170,9 @@ func TestSetNotNil(t *testing.T) {
 		if c.Value != c.Getter(v) {
 			t.Errorf("expected is %v, but was %v", c.Value, c.Getter(v))
 		}
+	}
+	if v.Projects[0].Name != "Sendgrid" {
+		t.Error("value was overwriten.")
 	}
 
 }
