@@ -138,7 +138,7 @@ func Set(i interface{}, name string, value string) (err error) {
 
 		if !fv.IsValid() {
 			// err = errors.New(fmt.Sprintf("can not find field %s.", field))
-			return errors.New(fmt.Sprintf("can not find field %s.", token.Left))
+			return errors.New(fmt.Sprintf("%+v has no such field %s .", sv.Interface(), token.Field))
 			return
 		}
 
@@ -255,7 +255,7 @@ func setStringValue(v reflect.Value, value string) (err error) {
 		}
 		v.SetFloat(n)
 	default:
-		panic(fmt.Sprintf("must set primary type but was %+v", v))
+		panic(fmt.Sprintf("value %+v can only been set to primary type but was %+v", value, v))
 	}
 
 	return
