@@ -28,19 +28,17 @@ func Set(i interface{}, name string, value string) (err error) {
 	sv := v.Elem()
 
 	if name == "" {
-		fmt.Println("Set primary start ===>", sv.Interface(), value)
 		setStringValue(sv, value)
 		return
 	}
 
-	fmt.Println("Set object start ===>")
 	var token *dotToken
 	token, err = nextDot(name)
 	if err != nil {
 		return
 	}
 
-	printv(sv.Interface(), name, value)
+	// printv(sv.Interface(), name, value)
 
 	if sv.Kind() == reflect.Map {
 		// map must have string type
@@ -54,13 +52,14 @@ func Set(i interface{}, name string, value string) (err error) {
 			mv.Set(reflect.MakeMap(mv.Type()))
 		}
 
-		var mapElem reflect.Value
-		elemType := mv.Type().Elem()
+		keyValue := reflect.ValueOf(token.Field)
 
-		if !mapElem.IsValid() {
-			mapElem = reflect.New(elemType).Elem()
-		} else {
-			mapElem.Set(reflect.Zero(elemType))
+		elemType := mv.Type().Elem()
+		mapElem := reflect.New(elemType).Elem()
+
+		existElem := mv.MapIndex(keyValue)
+		if existElem.IsValid() {
+			mapElem.Set(existElem)
 		}
 
 		err = Set(mapElem.Addr().Interface(), token.Left, value)
@@ -68,32 +67,67 @@ func Set(i interface{}, name string, value string) (err error) {
 			return
 		}
 
-		mv.SetMapIndex(reflect.ValueOf(token.Field), mapElem)
+		mv.SetMapIndex(keyValue, mapElem)
 		return
 	}
 
 	if sv.Kind() == reflect.Slice {
 		av := sv
-		if av.IsNil() {
-			av.Set(reflect.MakeSlice(av.Type(), 0, 0))
-		}
-
-		var arrayElem reflect.Value
 		elemType := av.Type().Elem()
+		var newslice reflect.Value
 
-		if !arrayElem.IsValid() {
-			arrayElem = reflect.New(elemType).Elem()
+		if token.IsAppendingArray {
+			newslice = av
+			arrayElem := reflect.New(elemType).Elem()
+			err = Set(arrayElem.Addr().Interface(), token.Left, value)
+			if err != nil {
+				return
+			}
+			newslice = reflect.Append(newslice, arrayElem)
 		} else {
-			arrayElem.Set(reflect.Zero(elemType))
+
+			if av.Len() > token.ArrayIndex {
+				newslice = reflect.MakeSlice(av.Type(), 0, 0)
+
+				arrayElem := av.Index(token.ArrayIndex)
+				if !arrayElem.IsValid() {
+					arrayElem.Set(reflect.New(elemType).Elem())
+				}
+
+				err = Set(arrayElem.Addr().Interface(), token.Left, value)
+				if err != nil {
+					return
+				}
+				for i := 0; i < token.ArrayIndex; i++ {
+					newslice = reflect.Append(newslice, av.Index(i))
+				}
+				newslice = reflect.Append(newslice, arrayElem)
+				for i := token.ArrayIndex + 1; i < av.Len(); i++ {
+					newslice = reflect.Append(newslice, av.Index(i))
+				}
+			} else {
+				newslice = av
+				if newslice.IsNil() {
+					newslice = reflect.MakeSlice(newslice.Type(), 0, 0)
+				}
+				arrayElem := reflect.New(elemType).Elem()
+				err = Set(arrayElem.Addr().Interface(), token.Left, value)
+				if err != nil {
+					return
+				}
+				if newslice.Len() < token.ArrayIndex {
+					for newslice.Len() < token.ArrayIndex {
+						newslice = reflect.Append(newslice, reflect.Zero(elemType))
+					}
+				}
+
+				newslice = reflect.Append(newslice, arrayElem)
+
+			}
 		}
 
-fmt.Println(token.Left)
+		av.Set(newslice)
 
-		err = Set(arrayElem.Addr().Interface(), token.Left, value)
-		if err != nil {
-			return
-		}
-		av = reflect.Append(av, arrayElem)
 		return
 	}
 
@@ -119,39 +153,33 @@ type dotToken struct {
 	Field            string
 	Left             string
 	IsArray          bool
-	ArrayIndex       uint64
+	ArrayIndex       int
 	IsAppendingArray bool
 }
 
 func nextDot(name string) (t *dotToken, err error) {
 	t = &dotToken{}
 	t.Field = strings.Trim(name, ".")
-	t.Left = ""
 
-	if i := strings.IndexAny(t.Field, "."); i > 0 {
+	if i := strings.IndexAny(t.Field, ".["); i > 0 {
 		t.Field, t.Left = t.Field[:i], t.Field[i+1:]
 	}
 
-	if j := strings.IndexAny(t.Field, "["); j > 0 {
+	if t.Field[len(t.Field)-1:] == "]" {
 		t.IsArray = true
-		arrayIndexBracket := ""
-		t.Field, arrayIndexBracket = t.Field[:j], t.Field[j+1:]
-		if arrayIndexBracket[len(arrayIndexBracket)-1:] != "]" {
-			err = errors.New(fmt.Sprintf("missing ] for %v", name))
-			return
-		}
-		arrayIndexString := arrayIndexBracket[0 : len(arrayIndexBracket)-1]
+		arrayIndexString := t.Field[0 : len(t.Field)-1]
 		if arrayIndexString == "" {
 			t.IsAppendingArray = true
 		} else {
-			t.ArrayIndex, err = strconv.ParseUint(arrayIndexString, 10, 64)
+			var i64 int64
+			i64, err = strconv.ParseInt(arrayIndexString, 10, 64)
+			t.ArrayIndex = int(i64)
 			if err != nil {
 				return
 			}
 		}
 	}
 
-	fmt.Println("token:", t)
 	return
 }
 
@@ -186,26 +214,23 @@ func Populate(i interface{}) {
 		v.Set(reflect.New(v.Type().Elem()))
 	}
 
-	printv(v.Interface(), "", "")
+	// printv(v.Interface(), "", "")
 
 	sv := v.Elem()
-	st := sv.Type()
 
 	for i := 0; i < sv.NumField(); i++ {
 		f := sv.Field(i)
 		if f.Kind() == reflect.Ptr && f.IsNil() {
 			Populate(f.Addr().Interface())
 		}
-		printv(f.Interface(), st.Field(i).Name, "")
+		// printv(f.Interface(), st.Field(i).Name, "")
 	}
 
-	printv(i, "", "")
+	// printv(i, "", "")
 }
 
 func setStringValue(v reflect.Value, value string) (err error) {
 	s := value
-	log.Println("setValue:", v.Kind(), value)
-
 	switch v.Kind() {
 	case reflect.String:
 		v.SetString(s)
