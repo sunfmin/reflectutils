@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func Set(i interface{}, name string, value string) (err error) {
+func Set(i interface{}, name string, value interface{}) (err error) {
 
 	v := reflect.ValueOf(i)
 
@@ -28,7 +28,16 @@ func Set(i interface{}, name string, value string) (err error) {
 	sv := v.Elem()
 
 	if name == "" {
-		setStringValue(sv, value)
+		strval, ok := value.(string)
+		if ok {
+			setStringValue(sv, strval)
+		} else {
+			valv := reflect.ValueOf(value)
+			for valv.Kind() == reflect.Ptr {
+				valv = valv.Elem()
+			}
+			sv.Set(valv)
+		}
 		return
 	}
 

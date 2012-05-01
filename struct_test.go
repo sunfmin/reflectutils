@@ -187,3 +187,14 @@ func TestSetStruct(t *testing.T) {
 		}
 	}
 }
+
+func TestSetOtherPointers(t *testing.T) {
+	var v *Person
+	Set(&v, ".Company", &Company{
+		Name: "The Plant",
+	})
+
+	if v.Company.Name != "The Plant" {
+		t.Errorf("set failed %+v", v)
+	}
+}
