@@ -263,6 +263,12 @@ func setStringValue(v reflect.Value, value string) (err error) {
 			break
 		}
 		v.SetFloat(n)
+	case reflect.Bool:
+		n, err := strconv.ParseBool(s)
+		if err != nil {
+			break
+		}
+		v.SetBool(n)
 	default:
 		panic(fmt.Sprintf("value %+v can only been set to primary type but was %+v", value, v))
 	}
