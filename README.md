@@ -224,6 +224,16 @@ You can do whatever deeper you like
 	// }
 ```
 
+If you set a property that don't exists, it gives you an error.
+```go
+	var p *Person
+	err := Set(&p, "Whatever.Not.Exists", "911")
+	
+	fmt.Println(err)
+	//Output:
+	// {Name: Score:0 Gender:0 Company:<nil> Departments:[] Projects:[] Phones:map[] Languages:map[]} has no such field `Whatever`.
+```
+
 
 
 

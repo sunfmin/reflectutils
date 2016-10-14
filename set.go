@@ -170,7 +170,7 @@ func Set(i interface{}, name string, value interface{}) (err error) {
 
 		if !fv.IsValid() {
 			// err = errors.New(fmt.Sprintf("can not find field %s.", field))
-			err = errors.New(fmt.Sprintf("%+v has no such field %s .", sv.Interface(), token.Field))
+			err = errors.New(fmt.Sprintf("%+v has no such field `%s`.", sv.Interface(), token.Field))
 			return
 		}
 

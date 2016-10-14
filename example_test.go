@@ -210,6 +210,16 @@ func ExampleSet_5setdeeper() {
 
 // }
 
+// If you set a property that don't exists, it gives you an error.
+func ExampleSet_6notexists() {
+	var p *Person
+	err := Set(&p, "Whatever.Not.Exists", "911")
+
+	fmt.Println(err)
+	//Output:
+	// {Name: Score:0 Gender:0 Company:<nil> Departments:[] Projects:[] Phones:map[] Languages:map[]} has no such field `Whatever`.
+}
+
 func printJsonV(v interface{}) {
 	j, _ := json.MarshalIndent(v, "", "\t")
 	fmt.Printf("\n\n%s\n", j)
