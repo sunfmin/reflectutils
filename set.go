@@ -1,3 +1,21 @@
+/*
+# reflectutils
+
+reflectutils is for setting your struct value by using string name and path that follows reflectutils rules.
+
+## The rules
+
+- `.Name` to set a property by field name
+- `.Person.Name` to set the name of the current property
+- `.Person.Addresses[0].Phone` to set an element of an array property
+- `.Person.Addresses[].Name` it will create a object of address and set it's property
+- `.Person.MapData.Name` it can also set value to map
+
+## How to install
+
+	go get github.com/sunfmin/reflectutils
+
+*/
 package reflectutils
 
 import (
@@ -9,12 +27,14 @@ import (
 	"strings"
 )
 
+// Set value of a struct by path using reflect.
 func Set(i interface{}, name string, value interface{}) (err error) {
 
 	v := reflect.ValueOf(i)
 
 	if v.Kind() != reflect.Ptr {
-		panic("set object must be a pointer.")
+		err = errors.New("set object must be a pointer.")
+		return
 	}
 
 	for v.Elem().Kind() == reflect.Ptr {
@@ -30,7 +50,10 @@ func Set(i interface{}, name string, value interface{}) (err error) {
 	if name == "" {
 		strval, ok := value.(string)
 		if ok {
-			setStringValue(sv, strval)
+			err = setStringValue(sv, strval)
+			if err != nil {
+				return
+			}
 		} else {
 			valv := reflect.ValueOf(value)
 			for valv.Kind() == reflect.Ptr {
@@ -147,7 +170,7 @@ func Set(i interface{}, name string, value interface{}) (err error) {
 
 		if !fv.IsValid() {
 			// err = errors.New(fmt.Sprintf("can not find field %s.", field))
-			return errors.New(fmt.Sprintf("%+v has no such field %s .", sv.Interface(), token.Field))
+			err = errors.New(fmt.Sprintf("%+v has no such field %s .", sv.Interface(), token.Field))
 			return
 		}
 
@@ -208,35 +231,41 @@ func printv(v interface{}, name interface{}, value string) {
 	log.Println("=====\n\n")
 }
 
-func Populate(i interface{}) {
-	v := reflect.ValueOf(i)
+// // Create any struct property field, don't include slice, maps
+// func Populate(i interface{}) (err error) {
+// 	v := reflect.ValueOf(i)
 
-	if v.Kind() != reflect.Ptr {
-		panic("object must be a pointer.")
-	}
+// 	if v.Kind() != reflect.Ptr {
+// 		err = errors.New("object must be a pointer.")
+// 		return
+// 	}
 
-	for v.Elem().Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
+// 	for v.Elem().Kind() == reflect.Ptr {
+// 		v = v.Elem()
+// 	}
 
-	if v.IsNil() {
-		v.Set(reflect.New(v.Type().Elem()))
-	}
+// 	if v.IsNil() {
+// 		v.Set(reflect.New(v.Type().Elem()))
+// 	}
 
-	// printv(v.Interface(), "", "")
+// 	// printv(v.Interface(), "", "")
 
-	sv := v.Elem()
+// 	sv := v.Elem()
 
-	for i := 0; i < sv.NumField(); i++ {
-		f := sv.Field(i)
-		if f.Kind() == reflect.Ptr && f.IsNil() {
-			Populate(f.Addr().Interface())
-		}
-		// printv(f.Interface(), st.Field(i).Name, "")
-	}
+// 	for i := 0; i < sv.NumField(); i++ {
+// 		f := sv.Field(i)
+// 		if f.Kind() == reflect.Ptr && f.IsNil() {
+// 			err = Populate(f.Addr().Interface())
+// 			if err != nil {
+// 				return
+// 			}
+// 		}
+// 		// printv(f.Interface(), st.Field(i).Name, "")
+// 	}
 
-	// printv(i, "", "")
-}
+// 	// printv(i, "", "")
+// 	return
+// }
 
 func setStringValue(v reflect.Value, value string) (err error) {
 	s := value
@@ -270,7 +299,7 @@ func setStringValue(v reflect.Value, value string) (err error) {
 		}
 		v.SetBool(n)
 	default:
-		panic(fmt.Sprintf("value %+v can only been set to primary type but was %+v", value, v))
+		err = errors.New(fmt.Sprintf("value %+v can only been set to primary type but was %+v", value, v))
 	}
 
 	return
