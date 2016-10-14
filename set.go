@@ -48,19 +48,26 @@ func Set(i interface{}, name string, value interface{}) (err error) {
 	sv := v.Elem()
 
 	if name == "" {
-		strval, ok := value.(string)
-		if ok {
-			err = setStringValue(sv, strval)
+
+		switch inputv := value.(type) {
+		case string:
+			err = setStringValue(sv, inputv)
 			if err != nil {
 				return
 			}
-		} else {
+		case []byte:
+			err = setStringValue(sv, string(inputv))
+			if err != nil {
+				return
+			}
+		default:
 			valv := reflect.ValueOf(value)
 			for valv.Kind() == reflect.Ptr {
 				valv = valv.Elem()
 			}
 			sv.Set(valv)
 		}
+
 		return
 	}
 
@@ -269,33 +276,54 @@ func printv(v interface{}, name interface{}, value string) {
 
 func setStringValue(v reflect.Value, value string) (err error) {
 	s := value
+
+	// if type is []byte
+	if v.Kind() == reflect.Slice && v.Type().Elem().Kind() == reflect.Uint8 {
+		v.SetBytes([]byte(s))
+		return
+	}
+
 	switch v.Kind() {
 	case reflect.String:
 		v.SetString(s)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		n, err := strconv.ParseInt(s, 10, 64)
-		if err != nil || v.OverflowInt(n) {
-			break
+		var n int64
+		n, err = strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return
+		}
+		if v.OverflowInt(n) {
+			err = fmt.Errorf("overflow int64 for %d.", n)
+			return
 		}
 		v.SetInt(n)
-
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		n, err := strconv.ParseUint(s, 10, 64)
-		if err != nil || v.OverflowUint(n) {
-			break
+		var n uint64
+		n, err = strconv.ParseUint(s, 10, 64)
+		if err != nil {
+			return
+		}
+		if v.OverflowUint(n) {
+			err = fmt.Errorf("overflow uint64 for %d.", n)
+			return
 		}
 		v.SetUint(n)
-
 	case reflect.Float32, reflect.Float64:
-		n, err := strconv.ParseFloat(s, v.Type().Bits())
-		if err != nil || v.OverflowFloat(n) {
-			break
+		var n float64
+		n, err = strconv.ParseFloat(s, v.Type().Bits())
+		if err != nil {
+			return
+		}
+		if v.OverflowFloat(n) {
+			err = fmt.Errorf("overflow float64 for %d.", n)
+			return
 		}
 		v.SetFloat(n)
 	case reflect.Bool:
-		n, err := strconv.ParseBool(s)
+		var n bool
+		n, err = strconv.ParseBool(s)
 		if err != nil {
-			break
+			return
 		}
 		v.SetBool(n)
 	default:

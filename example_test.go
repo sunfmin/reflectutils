@@ -239,6 +239,36 @@ func ExampleSet_6appendtoarray() {
 	// }
 }
 
+// You could also set []byte data to string property, and vice versa.
+// And set string value to int, float
+func ExampleSet_6byteandstring() {
+	type Obj struct {
+		ByteProperty     []byte
+		StringProperty   string
+		IntValue         int
+		FloatValue       float64
+		IntValueForBytes int
+	}
+	var o *Obj
+	Set(&o, "ByteProperty", "hello")
+	Set(&o, "StringProperty", []byte{0x46, 0x65, 0x6c, 0x69, 0x78})
+	Set(&o, "IntValue", "22")
+	Set(&o, "IntValueForBytes", []byte{0x32, 0x32})
+	Set(&o, "FloatValue", "22.88")
+	fmt.Println(string(o.ByteProperty))
+	fmt.Println(o.StringProperty)
+	fmt.Println(o.IntValue)
+	fmt.Println(o.FloatValue)
+	fmt.Println(o.IntValueForBytes)
+	//Output:
+	//hello
+	//Felix
+	//22
+	//22.88
+	//22
+
+}
+
 // If you set a property that don't exists, it gives you an error.
 func ExampleSet_7notexists() {
 	var p *Person
