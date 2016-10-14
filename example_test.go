@@ -195,23 +195,52 @@ func ExampleSet_5setdeeper() {
 	// }
 }
 
-// func ExamplePopulate_1() {
-// 	type Loop struct {
-// 		Name string
-// 		Loop *Loop
-// 	}
-// 	var l *Loop
-// 	Populate(&l)
-
-// 	var p *Person
-// 	Populate(&p)
-// 	printJsonV(p)
-// 	//Output:
-
-// }
+// A new way to append to an array
+func ExampleSet_6appendtoarray() {
+	var p *Person
+	for i := 1; i < 6; i++ {
+		var d *Department
+		Set(&d, "Id", i)
+		Set(&d, "Name", fmt.Sprintf("Department of Energy %d", i))
+		Set(&p, "Departments[]", d)
+	}
+	printJsonV(p)
+	//Output:
+	// {
+	// 	"Name": "",
+	// 	"Score": 0,
+	// 	"Gender": 0,
+	// 	"Company": null,
+	// 	"Departments": [
+	// 		{
+	// 			"Id": 1,
+	// 			"Name": "Department of Energy 1"
+	// 		},
+	// 		{
+	// 			"Id": 2,
+	// 			"Name": "Department of Energy 2"
+	// 		},
+	// 		{
+	// 			"Id": 3,
+	// 			"Name": "Department of Energy 3"
+	// 		},
+	// 		{
+	// 			"Id": 4,
+	// 			"Name": "Department of Energy 4"
+	// 		},
+	// 		{
+	// 			"Id": 5,
+	// 			"Name": "Department of Energy 5"
+	// 		}
+	// 	],
+	// 	"Projects": null,
+	// 	"Phones": null,
+	// 	"Languages": null
+	// }
+}
 
 // If you set a property that don't exists, it gives you an error.
-func ExampleSet_6notexists() {
+func ExampleSet_7notexists() {
 	var p *Person
 	err := Set(&p, "Whatever.Not.Exists", "911")
 
