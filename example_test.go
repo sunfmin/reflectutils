@@ -276,7 +276,7 @@ func ExampleSet_7notexists() {
 
 	fmt.Println(err)
 	//Output:
-	// {Name: Score:0 Gender:0 Company:<nil> Departments:[] Projects:[] Phones:map[] Languages:map[]} has no such field `Whatever`.
+	// no such field.
 }
 
 func printJsonV(v interface{}) {

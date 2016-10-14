@@ -22,9 +22,14 @@ go get github.com/sunfmin/reflectutils
 
 
 
+* [Variables](#variables)
 * [Set](#set)
 
 
+## Variables
+``` go
+var NoSuchFieldError = errors.New("no such field.")
+```
 
 
 ## Set
@@ -304,7 +309,7 @@ If you set a property that don't exists, it gives you an error.
 	
 	fmt.Println(err)
 	//Output:
-	// {Name: Score:0 Gender:0 Company:<nil> Departments:[] Projects:[] Phones:map[] Languages:map[]} has no such field `Whatever`.
+	// no such field.
 ```
 
 
