@@ -23,6 +23,8 @@ go get github.com/sunfmin/reflectutils
 
 
 * [Variables](#variables)
+* [Get](#get)
+* [Must Get](#must-get)
 * [Set](#set)
 
 
@@ -30,6 +32,22 @@ go get github.com/sunfmin/reflectutils
 ``` go
 var NoSuchFieldError = errors.New("no such field.")
 ```
+
+
+## Get
+``` go
+func Get(i interface{}, name string) (value interface{}, err error)
+```
+Get value of a struct by path using reflect.
+
+
+
+## Must Get
+``` go
+func MustGet(i interface{}, name string) (value interface{})
+```
+MustGet get value of a struct by path using reflect, return nil if anything in the path is nil
+
 
 
 ## Set
@@ -47,7 +65,7 @@ By given these structs
 	    Gender      int
 	    Company     *Company
 	    Departments []*Department
-	    Projects    []*Project
+	    Projects    []Project
 	    Phones      map[string]string
 	    Languages   map[string]Language
 	}
@@ -85,6 +103,7 @@ For How to set simple field
 	Set(&p, "Score", 66.88)
 	Set(&p, "Gender", 1)
 	printJsonV(p)
+	fmt.Println(MustGet(&p, "Score"))
 	//Output:
 	// {
 	// 	"Name": "Felix",
@@ -96,6 +115,7 @@ For How to set simple field
 	// 	"Phones": null,
 	// 	"Languages": null
 	// }
+	// 66.88
 ```
 
 For how to set a struct property
@@ -104,6 +124,8 @@ For how to set a struct property
 	Set(p, ".Company.Name", "The Plant")
 	Set(p, ".Company.Phone.Number", "911")
 	printJsonV(p)
+	fmt.Println(MustGet(&p, ".Company.Phone.Number"))
+	
 	//Output:
 	// {
 	// 	"Name": "",
@@ -120,6 +142,7 @@ For how to set a struct property
 	// 	"Phones": null,
 	// 	"Languages": null
 	// }
+	// 911
 ```
 
 For how to set slice and it's property
@@ -127,12 +150,17 @@ For how to set slice and it's property
 	var p *Person
 	Set(&p, "Departments[0].Id", 1)
 	Set(&p, "Departments[0].Name", "High Tech")
-	
+	Set(&p, "Projects[0].Name", "UIBuilder")
 	// if you jump the index for an array, It will put nil in between
 	// So there will be no index out of range error.
 	Set(&p, "Departments[3].Id", 1)
 	Set(&p, "Departments[3].Name", "High Tech")
 	printJsonV(p)
+	
+	fmt.Println(MustGet(&p, "Departments[3].Name"))
+	fmt.Println(MustGet(&p, "Departments[4].Name"))
+	fmt.Println(MustGet(&p, "Projects[0].Name"))
+	
 	//Output:
 	// {
 	// 	"Name": "",
@@ -151,10 +179,19 @@ For how to set slice and it's property
 	// 			"Name": "High Tech"
 	// 		}
 	// 	],
-	// 	"Projects": null,
+	// 	"Projects": [
+	// 		{
+	// 			"Id": "",
+	// 			"Name": "UIBuilder",
+	// 			"Members": null
+	// 		}
+	// 	],
 	// 	"Phones": null,
 	// 	"Languages": null
 	// }
+	// High Tech
+	// <nil>
+	// UIBuilder
 ```
 
 For how to set map property
@@ -166,6 +203,8 @@ For how to set map property
 	Set(&p, "Languages.zh_CN.Code", "zh_CN")
 	
 	printJsonV(p)
+	fmt.Println(MustGet(&p, "Languages.zh_CN.Code"))
+	
 	//Output:
 	// {
 	// 	"Name": "",
@@ -186,6 +225,7 @@ For how to set map property
 	// 		}
 	// 	}
 	// }
+	// zh_CN
 ```
 
 You can do whatever deeper you like
@@ -194,6 +234,7 @@ You can do whatever deeper you like
 	Set(&p, "Projects[0].Members[0].Company.Phone.Number", "911")
 	
 	printJsonV(p)
+	fmt.Println(MustGet(&p, "Projects[0].Members[0].Company.Phone.Number"))
 	//Output:
 	// {
 	// 	"Name": "",
@@ -227,6 +268,7 @@ You can do whatever deeper you like
 	// 	"Phones": null,
 	// 	"Languages": null
 	// }
+	// 911
 ```
 
 A new way to append to an array

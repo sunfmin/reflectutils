@@ -13,7 +13,7 @@ func ExampleSet_0init() {
 		Gender      int
 		Company     *Company
 		Departments []*Department
-		Projects    []*Project
+		Projects    []Project
 		Phones      map[string]string
 		Languages   map[string]Language
 	}
@@ -51,6 +51,7 @@ func ExampleSet_1setfield() {
 	Set(&p, "Score", 66.88)
 	Set(&p, "Gender", 1)
 	printJsonV(p)
+	fmt.Println(MustGet(&p, "Score"))
 	//Output:
 	// {
 	// 	"Name": "Felix",
@@ -62,6 +63,7 @@ func ExampleSet_1setfield() {
 	// 	"Phones": null,
 	// 	"Languages": null
 	// }
+	// 66.88
 }
 
 // For how to set a struct property
@@ -70,6 +72,8 @@ func ExampleSet_2setstructproperty() {
 	Set(p, ".Company.Name", "The Plant")
 	Set(p, ".Company.Phone.Number", "911")
 	printJsonV(p)
+	fmt.Println(MustGet(&p, ".Company.Phone.Number"))
+
 	//Output:
 	// {
 	// 	"Name": "",
@@ -86,6 +90,7 @@ func ExampleSet_2setstructproperty() {
 	// 	"Phones": null,
 	// 	"Languages": null
 	// }
+	// 911
 }
 
 // For how to set slice and it's property
@@ -93,12 +98,17 @@ func ExampleSet_3setsliceproperty() {
 	var p *Person
 	Set(&p, "Departments[0].Id", 1)
 	Set(&p, "Departments[0].Name", "High Tech")
-
+	Set(&p, "Projects[0].Name", "UIBuilder")
 	// if you jump the index for an array, It will put nil in between
 	// So there will be no index out of range error.
 	Set(&p, "Departments[3].Id", 1)
 	Set(&p, "Departments[3].Name", "High Tech")
 	printJsonV(p)
+
+	fmt.Println(MustGet(&p, "Departments[3].Name"))
+	fmt.Println(MustGet(&p, "Departments[4].Name"))
+	fmt.Println(MustGet(&p, "Projects[0].Name"))
+
 	//Output:
 	// {
 	// 	"Name": "",
@@ -117,10 +127,19 @@ func ExampleSet_3setsliceproperty() {
 	// 			"Name": "High Tech"
 	// 		}
 	// 	],
-	// 	"Projects": null,
+	// 	"Projects": [
+	// 		{
+	// 			"Id": "",
+	// 			"Name": "UIBuilder",
+	// 			"Members": null
+	// 		}
+	// 	],
 	// 	"Phones": null,
 	// 	"Languages": null
 	// }
+	// High Tech
+	// <nil>
+	// UIBuilder
 }
 
 // For how to set map property
@@ -132,6 +151,8 @@ func ExampleSet_4setmapproperty() {
 	Set(&p, "Languages.zh_CN.Code", "zh_CN")
 
 	printJsonV(p)
+	fmt.Println(MustGet(&p, "Languages.zh_CN.Code"))
+
 	//Output:
 	// {
 	// 	"Name": "",
@@ -152,6 +173,7 @@ func ExampleSet_4setmapproperty() {
 	// 		}
 	// 	}
 	// }
+	// zh_CN
 }
 
 // You can do whatever deeper you like
@@ -160,6 +182,7 @@ func ExampleSet_5setdeeper() {
 	Set(&p, "Projects[0].Members[0].Company.Phone.Number", "911")
 
 	printJsonV(p)
+	fmt.Println(MustGet(&p, "Projects[0].Members[0].Company.Phone.Number"))
 	//Output:
 	// {
 	// 	"Name": "",
@@ -193,6 +216,7 @@ func ExampleSet_5setdeeper() {
 	// 	"Phones": null,
 	// 	"Languages": null
 	// }
+	// 911
 }
 
 // A new way to append to an array

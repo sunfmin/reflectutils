@@ -86,7 +86,7 @@ func Set(i interface{}, name string, value interface{}) (err error) {
 		mv := sv
 
 		if mv.Type().Key() != reflect.TypeOf("") {
-			return errors.New(fmt.Sprintf("map key %s must be string type", name))
+			return fmt.Errorf("map key %s must be string type", name)
 		}
 
 		if mv.IsNil() {
@@ -237,44 +237,8 @@ func printv(v interface{}, name interface{}, value string) {
 		"",
 		rv.IsValid(),
 	)
-	log.Println("=====\n\n")
+	log.Println("=====")
 }
-
-// // Create any struct property field, don't include slice, maps
-// func Populate(i interface{}) (err error) {
-// 	v := reflect.ValueOf(i)
-
-// 	if v.Kind() != reflect.Ptr {
-// 		err = errors.New("object must be a pointer.")
-// 		return
-// 	}
-
-// 	for v.Elem().Kind() == reflect.Ptr {
-// 		v = v.Elem()
-// 	}
-
-// 	if v.IsNil() {
-// 		v.Set(reflect.New(v.Type().Elem()))
-// 	}
-
-// 	// printv(v.Interface(), "", "")
-
-// 	sv := v.Elem()
-
-// 	for i := 0; i < sv.NumField(); i++ {
-// 		f := sv.Field(i)
-// 		if f.Kind() == reflect.Ptr && f.IsNil() {
-// 			err = Populate(f.Addr().Interface())
-// 			if err != nil {
-// 				return
-// 			}
-// 		}
-// 		// printv(f.Interface(), st.Field(i).Name, "")
-// 	}
-
-// 	// printv(i, "", "")
-// 	return
-// }
 
 func setStringValue(v reflect.Value, value string) (err error) {
 	s := value
@@ -295,7 +259,7 @@ func setStringValue(v reflect.Value, value string) (err error) {
 			return
 		}
 		if v.OverflowInt(n) {
-			err = fmt.Errorf("overflow int64 for %d.", n)
+			err = fmt.Errorf("overflow int64 for %d", n)
 			return
 		}
 		v.SetInt(n)
@@ -306,7 +270,7 @@ func setStringValue(v reflect.Value, value string) (err error) {
 			return
 		}
 		if v.OverflowUint(n) {
-			err = fmt.Errorf("overflow uint64 for %d.", n)
+			err = fmt.Errorf("overflow uint64 for %d", n)
 			return
 		}
 		v.SetUint(n)
@@ -317,7 +281,7 @@ func setStringValue(v reflect.Value, value string) (err error) {
 			return
 		}
 		if v.OverflowFloat(n) {
-			err = fmt.Errorf("overflow float64 for %d.", n)
+			err = fmt.Errorf("overflow float64 for %f", n)
 			return
 		}
 		v.SetFloat(n)
@@ -329,7 +293,7 @@ func setStringValue(v reflect.Value, value string) (err error) {
 		}
 		v.SetBool(n)
 	default:
-		err = errors.New(fmt.Sprintf("value %+v can only been set to primary type but was %+v", value, v))
+		err = fmt.Errorf("value %+v can only been set to primary type but was %+v", value, v)
 	}
 
 	return
