@@ -1,7 +1,6 @@
 package reflectutils
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -19,28 +18,14 @@ func MustGet(i interface{}, name string) (value interface{}) {
 
 // Get value of a struct by path using reflect.
 func Get(i interface{}, name string) (value interface{}, err error) {
-
-	v := reflect.ValueOf(i)
-
-	if v.Kind() != reflect.Ptr {
-		err = errors.New("get object must be a pointer")
-		return
-	}
-
-	for v.Elem().Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-
-	if v.IsNil() {
-		return
-	}
-
-	sv := v.Elem()
+	// printv(i, name)
 
 	if name == "" {
-		value = sv.Interface()
+		value = i
 		return
 	}
+
+	v := reflect.ValueOf(i)
 
 	var token *dotToken
 	token, err = nextDot(name)
@@ -48,7 +33,7 @@ func Get(i interface{}, name string) (value interface{}, err error) {
 		return
 	}
 
-	// printv(sv.Interface(), name, value)
+	sv := v
 
 	if sv.Kind() == reflect.Map {
 		// map must have string type
@@ -72,7 +57,7 @@ func Get(i interface{}, name string) (value interface{}, err error) {
 			mapElem.Set(existElem)
 		}
 
-		value, err = Get(mapElem.Addr().Interface(), token.Left)
+		value, err = Get(mapElem.Interface(), token.Left)
 		if err != nil {
 			return
 		}
@@ -96,12 +81,20 @@ func Get(i interface{}, name string) (value interface{}, err error) {
 			return
 		}
 
-		value, err = Get(arrayElem.Addr().Interface(), token.Left)
+		value, err = Get(arrayElem.Interface(), token.Left)
 		if err != nil {
 			return
 		}
 
 		return
+	}
+
+	if sv.Kind() != reflect.Struct {
+		for sv.Elem().Kind() == reflect.Ptr {
+			sv = sv.Elem()
+		}
+
+		sv = sv.Elem()
 	}
 
 	if sv.Kind() == reflect.Struct {
@@ -113,8 +106,7 @@ func Get(i interface{}, name string) (value interface{}, err error) {
 			err = NoSuchFieldError
 			return
 		}
-
-		value, err = Get(fv.Addr().Interface(), token.Left)
+		value, err = Get(fv.Interface(), token.Left)
 		return
 	}
 

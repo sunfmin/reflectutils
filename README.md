@@ -76,8 +76,9 @@ By given these structs
 	}
 	
 	type Company struct {
-	    Name  string
-	    Phone *Phone
+	    Name   string
+	    Phone  *Phone
+	    Phone2 **Phone
 	}
 	
 	type Department struct {

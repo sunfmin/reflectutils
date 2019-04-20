@@ -1,7 +1,9 @@
-package reflectutils
+package reflectutils_test
 
 import (
 	"testing"
+
+	. "github.com/sunfmin/reflectutils"
 )
 
 type mapTest struct {

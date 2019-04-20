@@ -1,8 +1,11 @@
-package reflectutils
+package reflectutils_test
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
+
+	. "github.com/sunfmin/reflectutils"
 )
 
 type Person struct {
@@ -22,8 +25,9 @@ type Language struct {
 }
 
 type Company struct {
-	Name  string
-	Phone *Phone
+	Name   string
+	Phone  *Phone
+	Phone2 **Phone `json:"-"`
 }
 
 type Department struct {
@@ -196,5 +200,116 @@ func TestSetOtherPointers(t *testing.T) {
 
 	if v.Company.Name != "The Plant" {
 		t.Errorf("set failed %+v", v)
+	}
+}
+
+var phone158 = &Phone{
+	Number: "158",
+}
+
+var getcases = []struct {
+	Name            string
+	Value           interface{}
+	ExpectedGetType string
+}{
+	{
+		Name: "",
+		Value: &Person{
+			Company: &Company{
+				Name: "The Plant",
+			},
+		},
+		ExpectedGetType: "*reflectutils_test.Person",
+	},
+	{
+		Name: "Company",
+		Value: &Person{
+			Company: &Company{
+				Name: "The Plant",
+			},
+		},
+		ExpectedGetType: "*reflectutils_test.Company",
+	},
+	{
+		Name: "Company.Phone2",
+		Value: &Person{
+			Company: &Company{
+				Phone2: &phone158,
+			},
+		},
+		ExpectedGetType: "**reflectutils_test.Phone",
+	},
+	{
+		Name: "Company.Phone2.Number",
+		Value: &Person{
+			Company: &Company{
+				Phone2: &phone158,
+			},
+		},
+		ExpectedGetType: "string",
+	},
+	{
+		Name: "Phones.Home",
+		Value: &Person{
+			Phones: map[string]string{
+				"Home": "158",
+			},
+		},
+		ExpectedGetType: "string",
+	},
+	{
+		Name: "Languages.en_US.Name",
+		Value: &Person{
+			Languages: map[string]Language{
+				"en_US": Language{
+					Name: "English",
+				},
+			},
+		},
+		ExpectedGetType: "string",
+	},
+	{
+		Name: "Projects[1].Name",
+		Value: &Person{
+			Projects: []*Project{
+				{
+					Name: "Top1",
+				},
+				{
+					Name: "Top2",
+				},
+			},
+		},
+		ExpectedGetType: "string",
+	},
+}
+
+func TestGet(t *testing.T) {
+
+	for _, c := range getcases {
+		t.Run(c.Name, func(t2 *testing.T) {
+			v, err := Get(c.Value, c.Name)
+			if err != nil {
+				panic(err)
+			}
+
+			typeName := reflect.ValueOf(v).Type().String()
+			if typeName != c.ExpectedGetType {
+				panic(fmt.Sprintf("expected is %v, but was %v", c.ExpectedGetType, typeName))
+			}
+		})
+	}
+
+	var p = &Person{
+		Company: &Company{
+			Name: "The Plant 1",
+		},
+	}
+
+	c1 := MustGet(p, "Company").(*Company)
+
+	c1.Name = "The Plant 2"
+	if p.Company.Name != c1.Name {
+		panic(fmt.Sprintf("expected is %v, but was %v", c1.Name, p.Company.Name))
 	}
 }

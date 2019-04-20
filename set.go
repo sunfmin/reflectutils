@@ -224,17 +224,16 @@ func nextDot(name string) (t *dotToken, err error) {
 	return
 }
 
-func printv(v interface{}, name interface{}, value string) {
+func printv(v interface{}, name interface{}) {
 	log.Println("=====")
 	rv := reflect.ValueOf(v)
 	log.Printf(
-		"\n\tname: %+v, \n\tv: %+v, \n\trv: %+v, \n\trv.Kind(): %+v, \n\trv.Type(): %+v, \n\trv.IsNil(): %+v, \n\trv.IsValid(): %+v",
+		"\n\tname: %+v, \n\tv: %+v, \n\trv: %+v, \n\trv.Kind(): %+v, \n\trv.Type(): %+v, \n\trv.IsValid(): %+v",
 		name,
 		v,
 		rv,
 		rv.Kind(),
 		rv.Type(),
-		"",
 		rv.IsValid(),
 	)
 	log.Println("=====")

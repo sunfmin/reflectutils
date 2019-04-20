@@ -1,8 +1,10 @@
-package reflectutils
+package reflectutils_test
 
 import (
 	"encoding/json"
 	"fmt"
+
+	. "github.com/sunfmin/reflectutils"
 )
 
 // By given these structs
@@ -24,8 +26,9 @@ func ExampleSet_0init() {
 	}
 
 	type Company struct {
-		Name  string
-		Phone *Phone
+		Name   string
+		Phone  *Phone
+		Phone2 **Phone
 	}
 
 	type Department struct {
