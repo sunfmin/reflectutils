@@ -16,15 +16,26 @@ func MustGet(i interface{}, name string) (value interface{}) {
 	return
 }
 
+func IsNil(i interface{}) bool {
+	v := reflect.ValueOf(i)
+
+	switch v.Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Slice, reflect.Interface, reflect.Func, reflect.Chan, reflect.UnsafePointer:
+		return v.IsNil()
+	default:
+	}
+	return false
+}
+
 // Get value of a struct by path using reflect.
 func Get(i interface{}, name string) (value interface{}, err error) {
 	// printv(i, name)
 
-	v := reflect.ValueOf(i)
-
-	if v.CanSet() && v.IsNil() {
+	if IsNil(i) {
 		return
 	}
+
+	v := reflect.ValueOf(i)
 
 	if name == "" {
 		value = v.Interface()
