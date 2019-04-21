@@ -20,12 +20,16 @@ func MustGet(i interface{}, name string) (value interface{}) {
 func Get(i interface{}, name string) (value interface{}, err error) {
 	// printv(i, name)
 
-	if name == "" {
-		value = i
+	v := reflect.ValueOf(i)
+
+	if v.CanSet() && v.IsNil() {
 		return
 	}
 
-	v := reflect.ValueOf(i)
+	if name == "" {
+		value = v.Interface()
+		return
+	}
 
 	var token *dotToken
 	token, err = nextDot(name)

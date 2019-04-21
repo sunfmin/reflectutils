@@ -313,3 +313,11 @@ func TestGet(t *testing.T) {
 		panic(fmt.Sprintf("expected is %v, but was %v", c1.Name, p.Company.Name))
 	}
 }
+
+func TestGetNil(t *testing.T) {
+	p := &Person{}
+	c := MustGet(p, "Company")
+	if c != nil {
+		t.Error("Get field nil should be nil")
+	}
+}
