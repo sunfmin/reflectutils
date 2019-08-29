@@ -21,42 +21,6 @@ go get github.com/sunfmin/reflectutils
 
 
 
-
-* [Variables](#variables)
-* [Get](#get)
-* [Must Get](#must-get)
-* [Set](#set)
-
-
-## Variables
-``` go
-var NoSuchFieldError = errors.New("no such field.")
-```
-
-
-## Get
-``` go
-func Get(i interface{}, name string) (value interface{}, err error)
-```
-Get value of a struct by path using reflect.
-
-
-
-## Must Get
-``` go
-func MustGet(i interface{}, name string) (value interface{})
-```
-MustGet get value of a struct by path using reflect, return nil if anything in the path is nil
-
-
-
-## Set
-``` go
-func Set(i interface{}, name string, value interface{}) (err error)
-```
-Set value of a struct by path using reflect.
-
-
 By given these structs
 ```go
 	type Person struct {
@@ -355,6 +319,39 @@ If you set a property that don't exists, it gives you an error.
 	// no such field.
 ```
 
+Get Type of a deep nested object
+```go
+	type Variant struct {
+	    Name string
+	}
+	type Product struct {
+	    Variants []*Variant
+	    ByCode   map[string]*Variant
+	}
+	type Obj struct {
+	    MainProduct *Product
+	}
+	
+	var o *Obj
+	
+	fmt.Println(GetType(o, "MainProduct.Variants[0].Name"))
+	fmt.Println(GetType(o, "MainProduct.Variants[0]"))
+	fmt.Println(GetType(o, "MainProduct.Variants"))
+	fmt.Println(GetType(o, "MainProduct"))
+	fmt.Println(GetType(o, "MainProduct.ByCode.abc"))
+	fmt.Println(GetType(o, "MainProduct.ByCode"))
+	fmt.Println(GetType(o, "x123.ByCode"))
+	fmt.Println(GetType(o, "MainProduct.ByCode.abc.NotExist"))
+	//Output:
+	//string
+	//*reflectutils_test.Variant
+	//[]*reflectutils_test.Variant
+	//*reflectutils_test.Product
+	//*reflectutils_test.Variant
+	//map[string]*reflectutils_test.Variant
+	//<nil>
+	//<nil>
+```
 
 
 

@@ -306,6 +306,41 @@ func ExampleSet_7notexists() {
 	// no such field.
 }
 
+
+// Get Type of a deep nested object
+func ExampleSet_8gettype() {
+	type Variant struct {
+		Name string
+	}
+	type Product struct {
+		Variants []*Variant
+		ByCode map[string]*Variant
+	}
+	type Obj struct {
+		MainProduct *Product
+	}
+
+	var o *Obj
+
+	fmt.Println(GetType(o, "MainProduct.Variants[0].Name"))
+	fmt.Println(GetType(o, "MainProduct.Variants[0]"))
+	fmt.Println(GetType(o, "MainProduct.Variants"))
+	fmt.Println(GetType(o, "MainProduct"))
+	fmt.Println(GetType(o, "MainProduct.ByCode.abc"))
+	fmt.Println(GetType(o, "MainProduct.ByCode"))
+	fmt.Println(GetType(o, "x123.ByCode"))
+	fmt.Println(GetType(o, "MainProduct.ByCode.abc.NotExist"))
+	//Output:
+	//string
+	//*reflectutils_test.Variant
+	//[]*reflectutils_test.Variant
+	//*reflectutils_test.Product
+	//*reflectutils_test.Variant
+	//map[string]*reflectutils_test.Variant
+	//<nil>
+	//<nil>
+}
+
 func printJsonV(v interface{}) {
 	j, _ := json.MarshalIndent(v, "", "\t")
 	fmt.Printf("\n\n%s\n", j)
