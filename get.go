@@ -11,7 +11,7 @@ func MustGet(i interface{}, name string) (value interface{}) {
 	var err error
 	value, err = Get(i, name)
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("%s: %s of %+v", err, name, i))
 	}
 	return
 }

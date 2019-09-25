@@ -27,7 +27,7 @@ import (
 	"strings"
 )
 
-var NoSuchFieldError = errors.New("no such field.")
+var NoSuchFieldError = errors.New("no such field")
 
 // Set value of a struct by path using reflect.
 func Set(i interface{}, name string, value interface{}) (err error) {
