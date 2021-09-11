@@ -1,6 +1,7 @@
 package reflectutils
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -30,6 +31,11 @@ func IsNil(i interface{}) bool {
 // Get value of a struct by path using reflect.
 func Get(i interface{}, name string) (value interface{}, err error) {
 	// printv(i, name)
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New(fmt.Sprint(r))
+		}
+	}()
 
 	if IsNil(i) {
 		return

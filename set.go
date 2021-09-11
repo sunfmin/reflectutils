@@ -31,6 +31,11 @@ var NoSuchFieldError = errors.New("no such field")
 
 // Set value of a struct by path using reflect.
 func Set(i interface{}, name string, value interface{}) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New(fmt.Sprint(r))
+		}
+	}()
 
 	v := reflect.ValueOf(i)
 
