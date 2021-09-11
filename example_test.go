@@ -303,7 +303,7 @@ func ExampleSet_7notexists() {
 
 	fmt.Println(err)
 	//Output:
-	// no such field.
+	// no such field
 }
 
 

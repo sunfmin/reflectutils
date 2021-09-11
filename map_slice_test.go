@@ -71,3 +71,60 @@ func TestSlices(t *testing.T) {
 	}
 
 }
+
+func TestMapSetNil(t *testing.T) {
+	m := make(map[string]int)
+	Set(&m, "", nil)
+	if m != nil {
+		t.Errorf("got non-nil (%p), want nil", m)
+	}
+}
+
+func TestSliceSetNil(t *testing.T) {
+	m := []int{1}
+	err := Set(&m, "", nil)
+	if err != nil {
+		panic(err)
+	}
+	if m != nil {
+		t.Errorf("got non-nil (%p), want nil", m)
+	}
+
+}
+
+func TestStructSetNil(t *testing.T) {
+	type S struct {
+		Val string
+	}
+	m := &S{Val: "123"}
+	err := Set(&m, "", nil)
+	if err != nil {
+		panic(err)
+	}
+
+
+	if m != nil {
+		t.Errorf("got non-nil (%#+v), want nil", m)
+	}
+}
+
+func TestSetFieldNil(t *testing.T) {
+
+	type S struct {
+		Value []int
+	}
+
+	var s = &S{
+		Value: []int{1, 2},
+	}
+
+	err := Set(s, "Value", nil)
+	if err != nil {
+		panic(err)
+	}
+
+	if s.Value != nil {
+		panic("s.Value is not nil")
+	}
+
+}

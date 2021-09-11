@@ -63,6 +63,12 @@ func Set(i interface{}, name string, value interface{}) (err error) {
 				return
 			}
 		default:
+			if value == nil {
+				vm := reflect.ValueOf(i)
+				vm.Elem().Set(reflect.Zero(vm.Elem().Type()))
+				return
+			}
+
 			valv := reflect.ValueOf(value)
 			for valv.Kind() == reflect.Ptr {
 				valv = valv.Elem()
