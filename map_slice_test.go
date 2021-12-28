@@ -1,6 +1,7 @@
 package reflectutils_test
 
 import (
+	"fmt"
 	"testing"
 
 	. "github.com/sunfmin/reflectutils"
@@ -102,7 +103,6 @@ func TestStructSetNil(t *testing.T) {
 		panic(err)
 	}
 
-
 	if m != nil {
 		t.Errorf("got non-nil (%#+v), want nil", m)
 	}
@@ -127,4 +127,165 @@ func TestSetFieldNil(t *testing.T) {
 		panic("s.Value is not nil")
 	}
 
+}
+
+func TestDelete(t *testing.T) {
+	p := &Person{
+		Departments: []*Department{
+			{
+				Name: "D1",
+			},
+			{
+				Name: "D2",
+			},
+			{
+				Name: "D3",
+			},
+		},
+		Phones: map[string]string{
+			"felix": "123",
+			"john":  "456",
+		},
+		Projects: []*Project{
+			{
+				Name: "Project1",
+				Members: []*Person{
+					{
+						Name: "Felix1",
+					},
+					{
+						Name: "Felix2",
+					},
+				},
+			},
+		},
+	}
+	var strs = []string{"1", "2", "3"}
+	var map1 = map[string]string{"a": "a1", "b": "b1"}
+	var map2 = &map1
+
+	var p2 = &Person{}
+
+	var deleteCases = []struct {
+		caseName    string
+		obj         interface{}
+		name        string
+		result      func(obj interface{}) (v interface{})
+		expected    string
+		expectedErr string
+	}{
+		{
+			caseName: "Delete map element in object",
+			obj:      p,
+			name:     "Phones[felix]",
+			result: func(obj interface{}) (v interface{}) {
+				return obj.(*Person).Phones
+			},
+			expected: "map[john:456]",
+		},
+		{
+			caseName: "Delete slice element in object",
+			obj:      p,
+			name:     "Departments[1]",
+			result: func(obj interface{}) (v interface{}) {
+				return obj.(*Person).Departments[1]
+			},
+			expected: "&{Id:0 Name:D3}",
+		},
+
+		{
+			caseName: "Delete slice element in object nested",
+			obj:      p,
+			name:     "Projects[0].Members[0]",
+			result: func(obj interface{}) (v interface{}) {
+				return obj.(*Person).Projects[0].Members[0].Name + obj.(*Person).Projects[0].Name
+			},
+			expected: "Felix2Project1",
+		},
+
+		{
+			caseName: "Delete slice element in object overflow",
+			obj:      p,
+			name:     "Departments[100]",
+			result: func(obj interface{}) (v interface{}) {
+				return obj.(*Person).Departments[1]
+			},
+			expected: "&{Id:0 Name:D3}",
+		},
+
+		{
+			caseName:    "Delete struct with error",
+			obj:         p,
+			name:        "Comp21",
+			expectedErr: "no such field",
+		},
+
+		{
+			caseName: "Delete struct",
+			obj:      p,
+			name:     "Departments[0].Name",
+			result: func(obj interface{}) (v interface{}) {
+				return obj.(*Person).Departments[0].Name
+			},
+			expected: "",
+		},
+
+		{
+			caseName:    "Delete with wrong index",
+			obj:         p,
+			name:        "Departments[abc].Name",
+			expectedErr: "no such field",
+		},
+
+		{
+			caseName: "Delete slice element",
+			obj:      &strs,
+			name:     "[1]",
+			result: func(obj interface{}) (v interface{}) {
+				return strs
+			},
+			expected: `[1 3]`,
+		},
+
+		{
+			caseName: "Delete map element",
+			obj:      &map2,
+			name:     "[a]",
+			result: func(obj interface{}) (v interface{}) {
+				return map1
+			},
+			expected: `map[b:b1]`,
+		},
+
+		{
+			caseName: "Delete struct whole",
+			obj:      &p2,
+			name:     "",
+			result: func(obj interface{}) (v interface{}) {
+				return p2
+			},
+			expected: `<nil>`,
+		},
+	}
+
+	for _, c := range deleteCases {
+		t.Run(c.caseName, func(t *testing.T) {
+			err := Delete(c.obj, c.name)
+			if c.expectedErr != "" {
+				if err == nil || err.Error() != c.expectedErr {
+					t.Errorf("expected error %s, but was %+v", c.expectedErr, err)
+				}
+			} else {
+				if err != nil {
+					t.Error(err)
+				}
+			}
+			if c.result != nil {
+				actual := fmt.Sprintf("%+v", c.result(c.obj))
+				if actual != c.expected {
+					t.Errorf("expected %s, but was %s", c.expected, actual)
+				}
+			}
+		})
+	}
 }
