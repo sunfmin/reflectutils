@@ -55,7 +55,7 @@ func ExampleSet_1setfield() {
 	Set(&p, "Gender", 1)
 	printJsonV(p)
 	fmt.Println(MustGet(&p, "Score"))
-	//Output:
+	// Output:
 	// {
 	// 	"Name": "Felix",
 	// 	"Score": 66.88,
@@ -77,7 +77,7 @@ func ExampleSet_2setstructproperty() {
 	printJsonV(p)
 	fmt.Println(MustGet(&p, ".Company.Phone.Number"))
 
-	//Output:
+	// Output:
 	// {
 	// 	"Name": "",
 	// 	"Score": 0,
@@ -112,7 +112,7 @@ func ExampleSet_3setsliceproperty() {
 	fmt.Println(MustGet(&p, "Departments[4].Name"))
 	fmt.Println(MustGet(&p, "Projects[0].Name"))
 
-	//Output:
+	// Output:
 	// {
 	// 	"Name": "",
 	// 	"Score": 0,
@@ -156,7 +156,7 @@ func ExampleSet_4setmapproperty() {
 	printJsonV(p)
 	fmt.Println(MustGet(&p, "Languages.zh_CN.Code"))
 
-	//Output:
+	// Output:
 	// {
 	// 	"Name": "",
 	// 	"Score": 0,
@@ -186,7 +186,7 @@ func ExampleSet_5setdeeper() {
 
 	printJsonV(p)
 	fmt.Println(MustGet(&p, "Projects[0].Members[0].Company.Phone.Number"))
-	//Output:
+	// Output:
 	// {
 	// 	"Name": "",
 	// 	"Score": 0,
@@ -232,7 +232,7 @@ func ExampleSet_6appendtoarray() {
 		Set(&p, "Departments[]", d)
 	}
 	printJsonV(p)
-	//Output:
+	// Output:
 	// {
 	// 	"Name": "",
 	// 	"Score": 0,
@@ -287,12 +287,12 @@ func ExampleSet_6byteandstring() {
 	fmt.Println(o.IntValue)
 	fmt.Println(o.FloatValue)
 	fmt.Println(o.IntValueForBytes)
-	//Output:
-	//hello
-	//Felix
-	//22
-	//22.88
-	//22
+	// Output:
+	// hello
+	// Felix
+	// 22
+	// 22.88
+	// 22
 
 }
 
@@ -302,10 +302,9 @@ func ExampleSet_7notexists() {
 	err := Set(&p, "Whatever.Not.Exists", "911")
 
 	fmt.Println(err)
-	//Output:
+	// Output:
 	// no such field
 }
-
 
 // Get Type of a deep nested object
 func ExampleSet_8gettype() {
@@ -314,7 +313,7 @@ func ExampleSet_8gettype() {
 	}
 	type Product struct {
 		Variants []*Variant
-		ByCode map[string]*Variant
+		ByCode   map[string]*Variant
 	}
 	type Obj struct {
 		MainProduct *Product
@@ -330,15 +329,76 @@ func ExampleSet_8gettype() {
 	fmt.Println(GetType(o, "MainProduct.ByCode"))
 	fmt.Println(GetType(o, "x123.ByCode"))
 	fmt.Println(GetType(o, "MainProduct.ByCode.abc.NotExist"))
-	//Output:
-	//string
-	//*reflectutils_test.Variant
-	//[]*reflectutils_test.Variant
-	//*reflectutils_test.Product
-	//*reflectutils_test.Variant
-	//map[string]*reflectutils_test.Variant
-	//<nil>
-	//<nil>
+	// Output:
+	// string
+	// *reflectutils_test.Variant
+	// []*reflectutils_test.Variant
+	// *reflectutils_test.Product
+	// *reflectutils_test.Variant
+	// map[string]*reflectutils_test.Variant
+	// <nil>
+	// <nil>
+}
+
+// ForEach slice with any
+func ExampleForEach_9_0_normal() {
+	var arr = []*Language{
+		{"en_US", "United States"},
+		{"zh_CN", "China"},
+	}
+
+	ForEach(arr, func(v any) {
+		ve := v.(*Language)
+		fmt.Printf("%s\n", ve.Name)
+	})
+	// Output:
+	// United States
+	// China
+}
+
+// ForEach slice with correct type
+func ExampleForEach_9_1_with_type() {
+	var arr = []*Language{
+		{"en_US", "United States"},
+		{"zh_CN", "China"},
+	}
+
+	ForEach(arr, func(v *Language) {
+		fmt.Printf("%s\n", v.Name)
+	})
+	// Output:
+	// United States
+	// China
+}
+
+// ForEach map with any
+func ExampleForEach_9_2_map_with_any() {
+	var m = map[string]*Language{
+		"en_US": {"en_US", "United States"},
+		"zh_CN": {"zh_CN", "China"},
+	}
+
+	ForEach(m, func(c any, v any) {
+		fmt.Printf("%s: %s\n", c.(string), v.(*Language).Name)
+	})
+	// Output:
+	// en_US: United States
+	// zh_CN: China
+}
+
+// ForEach map with any
+func ExampleForEach_9_3_map_with_correct_type() {
+	var m = map[string]*Language{
+		"en_US": {"en_US", "United States"},
+		"zh_CN": {"zh_CN", "China"},
+	}
+
+	ForEach(m, func(c string, v *Language) {
+		fmt.Printf("%s: %s\n", c, v.Name)
+	})
+	// Output:
+	// en_US: United States
+	// zh_CN: China
 }
 
 func printJsonV(v interface{}) {
