@@ -320,7 +320,7 @@ func TestGetNil(t *testing.T) {
 	}
 }
 
-func TestSetToNil(t *testing.T) {
+func TestSetNilToMultiLevelPointer(t *testing.T) {
 	{
 		var v *Person
 		err := Set(&v, "Name", "Felix")
