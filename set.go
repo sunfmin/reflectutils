@@ -14,7 +14,6 @@ reflectutils is for setting your struct value by using string name and path that
 ## How to install
 
 	go get github.com/sunfmin/reflectutils
-
 */
 package reflectutils
 
@@ -46,10 +45,9 @@ func Set(i interface{}, name string, value interface{}) (err error) {
 
 	for v.Elem().Kind() == reflect.Ptr {
 		v = v.Elem()
-	}
-
-	if v.IsNil() {
-		v.Set(reflect.New(v.Type().Elem()))
+		if v.IsNil() {
+			v.Set(reflect.New(v.Type().Elem()))
+		}
 	}
 
 	sv := v.Elem()
@@ -137,7 +135,6 @@ func Set(i interface{}, name string, value interface{}) (err error) {
 			}
 			newslice = reflect.Append(newslice, arrayElem)
 		} else {
-
 			if av.Len() > token.ArrayIndex {
 				newslice = reflect.MakeSlice(av.Type(), 0, 0)
 
