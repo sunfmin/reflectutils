@@ -178,7 +178,6 @@ func TestSetNotNil(t *testing.T) {
 	if v.Projects[0].Name != "Sendgrid" {
 		t.Error("value was overwriten.")
 	}
-
 }
 
 func TestSetStruct(t *testing.T) {
@@ -261,7 +260,7 @@ var getcases = []struct {
 		Name: "Languages.en_US.Name",
 		Value: &Person{
 			Languages: map[string]Language{
-				"en_US": Language{
+				"en_US": {
 					Name: "English",
 				},
 			},
@@ -285,7 +284,6 @@ var getcases = []struct {
 }
 
 func TestGet(t *testing.T) {
-
 	for _, c := range getcases {
 		t.Run(c.Name, func(t2 *testing.T) {
 			v, err := Get(c.Value, c.Name)
@@ -300,7 +298,7 @@ func TestGet(t *testing.T) {
 		})
 	}
 
-	var p = &Person{
+	p := &Person{
 		Company: &Company{
 			Name: "The Plant 1",
 		},
@@ -319,5 +317,47 @@ func TestGetNil(t *testing.T) {
 	c := MustGet(p, "Company")
 	if c != nil {
 		t.Error("Get field nil should be nil")
+	}
+}
+
+func TestSetNilToMultiLevelPointer(t *testing.T) {
+	{
+		var v *Person
+		err := Set(&v, "Name", "Felix")
+		if err != nil {
+			t.Error(err)
+		}
+		if v == nil {
+			t.Error("v should not be nil")
+		}
+		if v.Name != "Felix" {
+			t.Error("v.Name should be Felix")
+		}
+	}
+	{
+		var v **Person
+		err := Set(&v, "Name", "Felix")
+		if err != nil {
+			t.Error(err)
+		}
+		if v == nil {
+			t.Error("v should not be nil")
+		}
+		if (*v).Name != "Felix" {
+			t.Error("v.Name should be Felix")
+		}
+	}
+	{
+		var v ***Person
+		err := Set(&v, "Name", "Felix")
+		if err != nil {
+			t.Error(err)
+		}
+		if v == nil {
+			t.Error("v should not be nil")
+		}
+		if (**v).Name != "Felix" {
+			t.Error("v.Name should be Felix")
+		}
 	}
 }
